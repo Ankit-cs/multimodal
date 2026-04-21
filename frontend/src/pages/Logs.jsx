@@ -85,7 +85,7 @@ const Logs = () => {
                   <span>Observability</span>
                 </div>
                 <h1 className="text-3xl font-bold text-slate-900">System &amp; Agent Logs</h1>
-                <p className="text-gray-500 mt-1">Raw conversation data persisted in MongoDB for analysis and retrieval.</p>
+                <p className="text-gray-500 mt-1">Raw conversation data persisted in DocumentDB for analysis and retrieval.</p>
               </div>
 
               <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ const Logs = () => {
                   <div className="w-3 h-3 rounded-full bg-amber-500/20 border border-amber-500/50" />
                   <div className="w-3 h-3 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
                 </div>
-                <span className="text-slate-500 text-xs font-bold tracking-widest uppercase">MongoDB — Log Stream</span>
+                <span className="text-slate-500 text-xs font-bold tracking-widest uppercase">DocumentDB — Log Stream</span>
                 {!loading && (
                   <span className="ml-auto text-slate-600 text-xs">{filtered.length} entries</span>
                 )}

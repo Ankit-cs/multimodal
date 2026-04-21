@@ -50,6 +50,12 @@ const TiltCard = ({ children }) => {
 export default function LandingPage() {
     const navigate = useNavigate();
     const [scrolled, setScrolled] = useState(false);
+    const now = new Date();
+
+   const monthYear = now.toLocaleString('default', {
+     month: 'long',
+     year: 'numeric',
+    });
 
     useEffect(() => {
         const onScroll = () => setScrolled(window.scrollY > 20);
@@ -91,7 +97,7 @@ export default function LandingPage() {
                 </motion.h1>
                 
                 <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg md:text-xl text-gray-500 max-w-2xl leading-relaxed mb-10">
-                    NexusAI is a multi-agent platform for professionals—turning complex workflows into coordinated execution with autonomous, specialized agents.
+                    NexusAl is a multi-agent platform for professionals—turning complex workflows into coordinated execution with autonomous, specialized agents.
                 </motion.p>
                 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="flex flex-col sm:flex-row gap-4">
@@ -110,7 +116,7 @@ export default function LandingPage() {
                     {[
                         { title: "Dynamic Orchestration", desc: "Our proprietary protocol routes tasks to specialized agents in real-time based on mission objectives." },
                         { title: "Real-time Intelligence", desc: "Deeply integrated with Serper and Groq for sub-second facts and lightning-fast inference." },
-                        { title: "Private Doc Indexing", desc: "Enterprise-grade RAG with vector search on Azure Cosmos DB for secure retrieval." }
+                        { title: "Private Doc Indexing", desc: "Enterprise-grade RAG with vector search on Document  DB for secure retrieval." }
                     ].map((feature, i) => (
                         <div key={i} className="bg-white border border-gray-200 rounded-3xl p-10 hover:border-black transition-colors hover:shadow-xl hover:shadow-black/5 group cursor-default">
                             <div className="w-12 h-12 bg-gray-50 rounded-xl mb-6 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
@@ -177,7 +183,7 @@ export default function LandingPage() {
                     <div className="text-xs font-bold tracking-widest text-gray-400 uppercase">Omnichannel Outreach</div>
                     <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight">Professional Mailing,<br/>Automated.</h2>
                     <p className="text-lg text-gray-500 leading-relaxed max-w-md">
-                        Craft, refine, and deliver transactional emails with NexusAI. Our agents ensure the right tone, structure, and timing—so you can focus on meaningful connections.
+                        Craft, refine, and deliver transactional emails with NexusAl. Our agents ensure the right tone, structure, and timing—so you can focus on meaningful connections.
                     </p>
                 </div>
                 <div className="flex-1 w-full">
@@ -228,7 +234,7 @@ export default function LandingPage() {
                     <TiltCard>
                         <div className="bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 relative">
                             <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
-                                <h3 className="text-xl font-bold">March 2026</h3>
+                                <h3 className="text-xl font-bold">{monthYear}</h3>
                                 <div className="flex gap-2">
                                     <div className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center">&lsaquo;</div>
                                     <div className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center">&rsaquo;</div>

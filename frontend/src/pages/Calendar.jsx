@@ -251,7 +251,7 @@ const Calendar = () => {
                                 </div>
                                 <p className="text-slate-600 font-bold">No events scheduled.</p>
                                 <p className="text-sm text-slate-500 max-w-[220px] mt-2 leading-relaxed">
-                                    Start a workflow and ask OrchestrAl to add an event here.
+                                    Start a workflow and ask NexusAl to add an event here.
                                 </p>
                             </motion.div>
                         )}

@@ -135,7 +135,7 @@ const Integrations = () => {
                                                 }}
                                                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors appearance-none bg-white"
                                             >
-                                                <option value="Codeforces">Codeforces</option>
+                                                <option value="Spotify">Spotify</option>
                                                 <option value="custom">Custom Integration </option>
                                             </select>
                                         </div>

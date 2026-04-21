@@ -67,7 +67,7 @@ const Signup = () => {
                     <div className="bg-black text-white p-1.5 rounded-lg">
                         <Zap size={20} fill="currentColor" />
                     </div>
-                    <span className="text-xl font-bold tracking-tight text-slate-900">OrchestrAl</span>
+                    <span className="text-xl font-bold tracking-tight text-slate-900">NexusAl</span>
                 </div>
 
                 <div className="w-full max-w-md space-y-8 mt-12 lg:mt-0">
