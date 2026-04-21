@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     # Brevo Email
     BREVO_API_KEY: str = ""
     BREVO_SENDER_EMAIL: str = "ankitcareer018@gmail.com" # Don't forget to change this!
-    BREVO_SENDER_NAME: str = "NexusAI Agent"
+    BREVO_SENDER_NAME: str = "NexusAl Agent"
 
     class Config:
         env_file = ".env"

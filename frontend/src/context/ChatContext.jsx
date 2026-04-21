@@ -1,5 +1,5 @@
 // frontend/src/context/ChatContext.jsx
-// Holds all orchestration chat state above the router so it survives page navigation.
+// Holds all Nexus chat state above the router so it survives page navigation.
 // The Dashboard becomes a thin consumer of this shared state.
 import React, { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -112,7 +112,7 @@ export function ChatProvider({ children }) {
         eventSourceRef.current = null;
         setActiveStep(5);
         const output = extractBestOutput(newLogs);
-        const messagesToAdd = [{ role: 'system', content: '✨ Workflow completed successfully.', isHitlPrompt: false }];
+        const messagesToAdd = [{ role: 'system', content: '✨ Nexus task completed successfully.', isHitlPrompt: false }];
         if (output) {
           messagesToAdd.push({ role: 'system', content: output, isHitlPrompt: false });
         }
@@ -160,7 +160,7 @@ export function ChatProvider({ children }) {
       return;
     }
 
-    // Otherwise, brand new orchestration request
+    // Otherwise, brand new Nexus request
     allLogsRef.current = [];
     setLiveLogs([]);
     setChatMessages([{ role: 'user', content: inputText.trim() }]);
@@ -180,7 +180,7 @@ export function ChatProvider({ children }) {
     }
   }, [token, workflowStatus, currentSessionId, openStream]);
 
-  // ── Reset chat (New Orchestration) ──────────────────────────────────────────
+  // ── Reset chat (New Convergence) ──────────────────────────────────────────
 
   const resetChat = useCallback(() => {
     if (eventSourceRef.current) {

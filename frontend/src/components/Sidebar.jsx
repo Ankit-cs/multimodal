@@ -20,7 +20,7 @@ const Sidebar = ({ onClose }) => {
   const { user, logout } = useAuth();
 
   const navItems = [
-    { name: 'Orchestration', icon: LayoutDashboard, path: '/dashboard' },
+    { name: 'Nexus', icon: LayoutDashboard, path: '/dashboard' },
     { name: 'Sessions', icon: MessageSquareDashed, path: '/sessions' },
     { name: 'Agent Logs', icon: TerminalSquare, path: '/logs' },
     { name: 'Task History', icon: History, path: '/history' },

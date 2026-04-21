@@ -69,7 +69,7 @@ const Logs = () => {
     const text = filtered.map((l) => `[${l.session_id}] [${l.agent}] ${formatContent(l.content)}`).join('\n');
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'orchestrai_logs.log'; a.click();
+    const a = document.createElement('a'); a.href = url; a.download = 'nexusai_logs.log'; a.click();
     URL.revokeObjectURL(url);
   };
 

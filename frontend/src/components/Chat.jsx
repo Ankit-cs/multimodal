@@ -76,7 +76,7 @@ function FormattedOutput({ text }) {
   return <div className="space-y-0.5">{elements}</div>;
 }
 
-// ── Chat Component ────────────────────────────────────────────────────────────
+// ── Reset chat (New Convergence) ──────────────────────────────────────────
 
 const Chat = ({ messages, onSend, status }) => {
   const [input, setInput] = useState('');
@@ -104,7 +104,7 @@ const Chat = ({ messages, onSend, status }) => {
       <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-indigo-500" />
-          <h2 className="font-bold text-slate-800 text-sm">Orchestration Chat</h2>
+          <h2 className="font-bold text-slate-800 text-sm">Nexus Chat</h2>
         </div>
 
         {status === 'ACTIVE' && (

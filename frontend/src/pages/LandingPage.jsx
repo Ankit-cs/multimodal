@@ -236,15 +236,15 @@ export default function LandingPage() {
                             <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
                                 <h3 className="text-xl font-bold">{monthYear}</h3>
                                 <div className="flex gap-2">
-                                    <div className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center">&lsaquo;</div>
-                                    <div className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center">&rsaquo;</div>
+                                    <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">&lsaquo;</button>
+                                    <button className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">&rsaquo;</button>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-7 gap-3 text-center mb-4">
-                                {['M','T','W','T','F','S','S'].map(d => <div key={d} className="text-xs font-bold text-gray-400">{d}</div>)}
-                                {Array.from({ length: 31 }).map((_, i) => (
-                                    <div key={i} className={`aspect-square flex items-center justify-center rounded-xl text-sm font-semibold transition-colors ${i+1 === 14 ? 'bg-black text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'}`}>
+                                {['M','T','W','Th','F','S','Su'].map(d => <div key={d} className="text-xs font-bold text-gray-400">{d}</div>)}
+                                {Array.from({ length: new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() }).map((_, i) => (
+                                    <div key={i} className={`aspect-square flex items-center justify-center rounded-xl text-sm font-semibold transition-colors ${i+1 === now.getDate() ? 'bg-black text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50'}`}>
                                         {i + 1}
                                     </div>
                                 ))}

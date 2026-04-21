@@ -18,7 +18,7 @@ const Dashboard = () => {
   return (
     <div className="w-full max-w-[1200px] mx-auto flex flex-col gap-10 p-4 md:p-8">
 
-            {/* Top section: Nexus  Chat */}
+            {/* Top section: Nexus Chat */}
             <div className="flex flex-col min-h-[500px] max-h-[800px]">
               <Chat
                 messages={chatMessages}
@@ -27,7 +27,7 @@ const Dashboard = () => {
               />
             </div>
 
-            {/* Middle section: Active Nexus  (Graph) */}
+            {/* Middle section: Active Nexus (Graph) */}
             <div className="w-full">
               <Active activeStep={activeStep} />
             </div>

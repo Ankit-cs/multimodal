@@ -158,6 +158,7 @@ const Integrations = () => {
                                                 type="text"
                                                 value={clientId}
                                                 onChange={(e) => setClientId(e.target.value)}
+                                                autoComplete="off"
                                                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors font-mono text-sm"
                                                 placeholder="Enter Client ID from developer portal"
                                             />
@@ -168,6 +169,7 @@ const Integrations = () => {
                                                 type="password"
                                                 value={clientSecret}
                                                 onChange={(e) => setClientSecret(e.target.value)}
+                                                autoComplete="new-password"
                                                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:border-black focus:ring-1 focus:ring-black transition-colors font-mono text-sm"
                                                 placeholder="Enter Client Secret"
                                             />

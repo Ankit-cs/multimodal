@@ -66,7 +66,7 @@ const Active = ({ activeStep = -1 }) => {
           <Zap size={20} className="text-gray-700" />
         </div>
         <div>
-          <h2 className="font-bold text-lg text-slate-900">Active Orchestration</h2>
+          <h2 className="font-bold text-lg text-slate-900">Active Nexus</h2>
           <p className="text-sm text-gray-500">Real-time agent communication flow</p>
         </div>
       </div>

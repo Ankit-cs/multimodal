@@ -7,7 +7,7 @@ const Navbar = ({ onMenuClick }) => {
   const { resetChat } = useChatContext();
   const navigate = useNavigate();
 
-  const handleNewOrchestration = () => {
+  const handleNewConvergence = () => {
     resetChat();
     navigate('/dashboard');
   };
@@ -40,13 +40,13 @@ const Navbar = ({ onMenuClick }) => {
           <Clock size={20} />
         </button>
         
-        {/* New Orchestration Button — clears chat state and navigates to dashboard */}
+        {/* New Convergence Button — clears chat state and navigates to dashboard */}
         <button
-          onClick={handleNewOrchestration}
+          onClick={handleNewConvergence}
           className="flex items-center gap-2 bg-black text-white px-3 md:px-4 py-2.5 rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
         >
           <Sparkles size={16} />
-          <span className="hidden sm:inline">New Convergence </span>
+          <span className="hidden sm:inline">New Convergence</span>
           <span className="sm:hidden">New</span>
         </button>
       </div>
