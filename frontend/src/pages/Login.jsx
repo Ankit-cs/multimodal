@@ -202,7 +202,19 @@ const Login = () => {
                         <div className="relative flex justify-center text-sm"><span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span></div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
+                        <button className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-semibold text-slate-700">
+  
+  {/* Google "G" Logo */}
+  <svg className="w-5 h-5" viewBox="0 0 48 48">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.69 1.22 9.18 3.6l6.85-6.85C35.93 2.36 30.36 0 24 0 14.63 0 6.44 5.38 2.44 13.22l7.98 6.2C12.34 13.1 17.7 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.1 24.5c0-1.63-.15-3.2-.43-4.7H24v9h12.4c-.53 2.84-2.1 5.25-4.48 6.87l6.95 5.4C43.96 36.2 46.1 30.8 46.1 24.5z"/>
+    <path fill="#FBBC05" d="M10.42 28.42A14.5 14.5 0 019.5 24c0-1.54.27-3.03.76-4.42l-7.98-6.2A24 24 0 000 24c0 3.98.96 7.73 2.68 11.02l7.74-6.6z"/>
+    <path fill="#34A853" d="M24 48c6.36 0 11.93-2.1 15.9-5.7l-6.95-5.4c-2.02 1.36-4.6 2.16-8.95 2.16-6.3 0-11.66-3.6-13.58-8.82l-7.74 6.6C6.44 42.62 14.63 48 24 48z"/>
+  </svg>
+
+  Google
+</button>
                         <button className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-semibold text-slate-700">
                             <Github size={20} /> GitHub
                         </button>
@@ -210,6 +222,7 @@ const Login = () => {
                             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zm12.6 0H12.6V0H24v11.4z" fill="#00a4ef"/></svg>
                             Microsoft
                         </button>
+                        
                     </div>
 
                     <p className="text-center text-sm text-gray-500 font-medium mt-8">
