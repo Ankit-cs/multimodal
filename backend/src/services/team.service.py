@@ -18,11 +18,11 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
     if extra_tools is None:
         extra_tools = []
         
-    def make_client(api_key: str, model_name: str) -> OpenAIChatCompletionClient:
+    def make_client(api_key: str, model_name: str, base_url: str = settings.GROQ_BASE_URL) -> OpenAIChatCompletionClient:
         return OpenAIChatCompletionClient(
             model=model_name,
             api_key=api_key,
-            base_url=settings.GROQ_BASE_URL,
+            base_url=base_url,
             model_info=ModelInfo(
                 vision=False,
                 function_calling=True,
@@ -32,12 +32,13 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
             ),
         )
 
-    # Retaining your distinct model choices for different cognitive loads
-    planner_client    = make_client(settings.GROQ_API_KEY_2, settings.GROQ_MODEL_2)
-    reviewer_client   = make_client(settings.GROQ_API_KEY_2, settings.GROQ_MODEL_2)
-    researcher_client = make_client(settings.GROQ_API_KEY_1, settings.GROQ_MODEL_1)
-    executor_client   = make_client(settings.GROQ_API_KEY_1, settings.GROQ_MODEL_1)
-    finalizer_client  = make_client(settings.GROQ_API_KEY_2, getattr(settings, "FINALIZER_MODEL", settings.GROQ_MODEL_2))
+    # Fugu Orchestration: Using Gemini as the Manager LLM and specialized agents
+    manager_client    = make_client(settings.GEMINI_API_KEY_PLANNER, settings.GEMINI_MODEL, settings.GEMINI_BASE_URL)
+    planner_client    = make_client(settings.GEMINI_API_KEY_PLANNER, settings.GEMINI_MODEL, settings.GEMINI_BASE_URL)
+    reviewer_client   = make_client(settings.GEMINI_API_KEY_REVIEWER, settings.GEMINI_MODEL, settings.GEMINI_BASE_URL)
+    researcher_client = make_client(settings.GEMINI_API_KEY_RESEARCHER, settings.GEMINI_MODEL, settings.GEMINI_BASE_URL)
+    executor_client   = make_client(settings.GEMINI_API_KEY_EXECUTOR, settings.GEMINI_MODEL, settings.GEMINI_BASE_URL)
+    finalizer_client  = make_client(settings.GEMINI_API_KEY_REVIEWER, settings.GEMINI_MODEL, settings.GEMINI_BASE_URL)
 
     # -- Dynamic Tools Bound to User Context --
     import uuid
@@ -118,8 +119,8 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
         description="Formats final output. Route here ONLY when the Reviewer has fully approved the work and tasks are complete.",
         system_message="""You are the Presenter. Convert technical results into a premium, beautiful summary.
         1. FACTUAL HONESTY: Only claim an event is 'saved' if the Executor successfully ran the tool. If the workflow failed or asked a question, reflect that honestly.
-        2. USE RICH MARKDOWN: Use tables for lists, bold headers, and clean bullet points.
-        3. STYLISH PRESENTATION: Organize information clearly. If providing songs or data, ALWAYS use a Markdown Table.
+        2. STRUCTURED LAYOUT: Use '## SECTION NAME' for major categories. Use bold labels (e.g., **Key:** Value) for specific data points.
+        3. AVOID TABLES: Do NOT use markdown tables. Instead, use clean bullet points and indented lists for readability.
         4. FONT & TONE: Use a classy, professional, and helpful tone.
         5. End your message with exactly: COMPLETE_WORKFLOW""" 
     )
@@ -137,7 +138,7 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
     # -- Create Team --
     team = SelectorGroupChat(
         participants=[planner, researcher, executor, reviewer, finalizer],
-        model_client=planner_client,
+        model_client=manager_client,
         termination_condition=termination_condition
     )
     
