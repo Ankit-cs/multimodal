@@ -74,7 +74,8 @@ export function ChatProvider({ children }) {
     }
 
     const startIdx = allLogsRef.current.length;
-    const baseUrl = import.meta.env.VITE_API_URL || 'https://nexusai-backend-hxwu.onrender.com';
+    const baseUrl = import.meta.env.VITE_API_URL || 
+      (window.location.hostname === 'localhost' ? 'http://localhost:8000' : 'https://nexusai-backend-hxwu.onrender.com');
     const url = `${baseUrl}/api/workflow/${sessionId}/stream?start=${startIdx}`;
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
