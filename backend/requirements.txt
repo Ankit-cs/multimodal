@@ -18,4 +18,5 @@ pdfplumber
 sentence-transformers
 python-dotenv
 python-multipart
+aio-pika>=9.0.0
 
