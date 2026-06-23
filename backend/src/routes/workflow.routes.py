@@ -63,6 +63,22 @@ async def run_workflow(session_id: str, prompt: str, resume_feedback: str = None
 
         if pending_request and not is_approved:
             db_state["status"] = "PAUSED_FOR_HITL"
+            
+            # --- RABBITMQ INTEGRATION ---
+            try:
+                from src.services.rabbitmq import rabbitmq_service
+                await rabbitmq_service.publish_critical_message(
+                    queue_name="critical_alerts",
+                    payload={
+                        "event": "HUMAN_APPROVAL_REQUIRED",
+                        "session_id": session_id,
+                        "timestamp": datetime.datetime.utcnow().isoformat(),
+                        "message": "The AI requires human approval to proceed."
+                    }
+                )
+            except Exception as e:
+                print(f"[RabbitMQ] Failed to dispatch HITL alert: {e}")
+            # ----------------------------
         else:
             db_state["status"] = "COMPLETED"
 
