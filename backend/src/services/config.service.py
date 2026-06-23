@@ -12,6 +12,15 @@ class Settings(BaseSettings):
     GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
     SERPER_API_KEY: str = ""                        
     
+    # Gemini API Configuration for Fugu Orchestration
+    GEMINI_API_KEY_PLANNER: str
+    GEMINI_API_KEY_RESEARCHER: str
+    GEMINI_API_KEY_EXECUTOR: str
+    GEMINI_API_KEY_REVIEWER: str
+    GEMINI_MODEL: str = "gemini-1.5-pro-latest"
+    GEMINI_BASE_URL: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
+    
     # Azure Phi-4 LLM (optional - not required for core workflow)
     PHI4_API_KEY: Optional[str] = None
     PHI4_ENDPOINT: Optional[str] = None
