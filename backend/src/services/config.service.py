@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     
     REDIS_URL: str = "redis://localhost:6379/0"
     REDIS_QUEUE_NAME: str = "agent-tasks"
+    
+    # RabbitMQ
+    RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/"
 
     # Spotify MCP
     SPOTIFY_CLIENT_ID: str = ""
