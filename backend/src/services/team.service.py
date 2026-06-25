@@ -23,6 +23,7 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
             model=model_name,
             api_key=api_key,
             base_url=base_url,
+            max_retries=8,
             model_info=ModelInfo(
                 vision=False,
                 function_calling=True,
