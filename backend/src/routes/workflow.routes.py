@@ -258,6 +258,62 @@ async def get_workflow_graph_visualization(session_id: str):
         html_content = await cognee.visualize_graph(dataset=f"user_{user_id}")
         return HTMLResponse(content=html_content, status_code=200)
     except Exception as e:
+        error_msg = str(e)
+        if "dataset" in error_msg.lower() or "database" in error_msg.lower() or "validation" in error_msg.lower():
+            placeholder_html = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+                <style>
+                    body {
+                        background-color: #0b0f19;
+                        color: #e2e8f0;
+                        font-family: 'Outfit', sans-serif;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .card {
+                        background: rgba(255, 255, 255, 0.02);
+                        backdrop-filter: blur(10px);
+                        border: 1px solid rgba(255, 255, 255, 0.08);
+                        border-radius: 16px;
+                        padding: 40px;
+                        text-align: center;
+                        max-width: 450px;
+                        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+                    }
+                    .icon {
+                        font-size: 48px;
+                        margin-bottom: 20px;
+                        color: #3b82f6;
+                    }
+                    h2 {
+                        color: #3b82f6;
+                        margin-top: 0;
+                        font-weight: 600;
+                    }
+                    p {
+                        color: #94a3b8;
+                        line-height: 1.6;
+                        font-size: 15px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon">🔮</div>
+                    <h2>No Memory Graph Yet</h2>
+                    <p>Cognee memory has not been initialized for this user yet. Start a new workflow session or send a chat message to let the agents populate the memory graph!</p>
+                </div>
+            </body>
+            </html>
+            """
+            return HTMLResponse(content=placeholder_html, status_code=200)
         raise HTTPException(status_code=500, detail=f"Failed to generate visualization: {str(e)}")
 
 
