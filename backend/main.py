@@ -20,6 +20,13 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
+    from cognee.modules.observability.trace_context import enable_tracing
+    enable_tracing()
+    from cognee.modules.engine.operations.setup import setup as cognee_setup
+    try:
+        await cognee_setup()
+    except Exception as e:
+        print(f"[Cognee] Setup failed: {e}")
     await db_service.init_db()
     
     if settings.SPOTIFY_CLIENT_ID and settings.SPOTIFY_CLIENT_SECRET:

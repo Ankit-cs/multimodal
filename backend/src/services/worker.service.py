@@ -37,10 +37,29 @@ async def process_message(msg_payload: dict):
     is_approved = db_state.get("is_approved", False)
     hitl_enabled = db_state.get("hitl_enabled", True)
     
+    cognee_context = None
+    if action in ["START", "CHAT"]:
+        try:
+            from src.services.cognee import cognee_service
+            redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+            cache_key = f"cognee_context_{session_id}"
+            cached_context = await redis_client.get(cache_key)
+            if not cached_context:
+                user_email = db_state.get("owner_email", "default")
+                user_context = await cognee_service.recall("user preferences, frameworks, formatting habits, prior feedback", user_id=user_email)
+                await redis_client.setex(cache_key, 300, str(user_context))
+                cached_context = str(user_context)
+            await redis_client.aclose()
+            cognee_context = cached_context
+        except Exception as e:
+            print(f"Memory Pre-Fetch Error: {e}")
+
     team = build_orchestrai_team(
         is_approved=is_approved,
         extra_tools=extra_tools, 
-        hitl_enabled=hitl_enabled
+        hitl_enabled=hitl_enabled,
+        owner_email=db_state.get("owner_email"),
+        cognee_context=cognee_context
     )
 
     #Restore memory if resuming
@@ -83,6 +102,13 @@ async def process_message(msg_payload: dict):
                     print(f"[{event.source}] -> [Content contains non-encodable characters]")
                 
                 await db_service.save_state(db_state)
+                
+                if event.source == "Researcher":
+                    try:
+                        from src.services.cognee import cognee_service
+                        await cognee_service.remember(f"Session {session_id} reasoning: {content_str}", user_id=db_state.get("owner_email", "default"))
+                    except Exception as e:
+                        print(f"Failed to dump Researcher state to Cognee: {e}")
         
         # Check why it terminated (HITL vs Completed)
 
@@ -104,6 +130,11 @@ async def process_message(msg_payload: dict):
 
 
 async def main():
+    from cognee.modules.engine.operations.setup import setup as cognee_setup
+    try:
+        await cognee_setup()
+    except Exception as e:
+        print(f"[Cognee] Worker setup failed: {e}")
     await db_service.init_db()
     print("Worker Started. Listening for Redis messages...")
     
