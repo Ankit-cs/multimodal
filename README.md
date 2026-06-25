@@ -1,17 +1,18 @@
-<!-- <p align="center">
+<p align="center">
   <img src="assets/logo.png" width="300" alt="NexusAI Logo">
-</p> -->
+</p>
 
 <h1 align="center">NexusAI</h1>
 
 <p align="center">
-  <strong>Advanced Multi-Agent Orchestration Framework with Dynamic Routing</strong>
+  <strong>Advanced Stateful Multi-Agent Swarm Orchestration with Hybrid Graph-Vector Memory</strong>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.11+-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/FastAPI-0.100+-green?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/React-18+-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React">
+  <img src="https://img.shields.io/badge/Cognee-V2-FF6F61?style=for-the-badge&logo=graphz&logoColor=white" alt="Cognee">
   <img src="https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
   <img src="https://img.shields.io/badge/Upstash_Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis">
   <img src="https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white" alt="RabbitMQ">
@@ -20,19 +21,24 @@
 
 <hr />
 
-## 🌟 Vision
-**NexusAI** is a cloud-native, highly scalable **digital workforce**. Built on the foundation of the Fugu-architected dynamic routing system, it uses an intelligent Manager LLM (Gemini 1.5 Pro) to dynamically delegate tasks across a specialized swarm of agents. It enforces strict **Human-in-the-Loop (HITL)** safety protocols using enterprise message brokers.
+## 🌟 Vision & The "Amnesia" Upgrade
+**NexusAI** is a cloud-native, stateful **digital workforce**. 
+
+### The Upgrade: Stateful Memory
+Standard LLM orchestration swarms suffer from **LLM Amnesia**—waking up in new sessions with zero context of previous user preferences, integrations, or prior mistakes. 
+
+By integrating **Cognee's hybrid graph-vector memory fabric**, NexusAI has upgraded from a stateless pipeline to a **cognitive operating system**. The agent swarm now carries permanent, cross-session context, learns dynamically from user corrections, tracks chronological episodes, and optimizes its context window autonomously.
 
 ---
 
 ## 🛠️ Tech Stack & Infrastructure
 
-- **🖥️ Mission Control (Frontend)**: A sophisticated React dashboard featuring Glassmorphism, Framer Motion UI animations, live execution telemetry, and interactive HITL approval flows.
-- **🚀 Neural Gateway (Backend)**: FastAPI serving as a high-performance, fully asynchronous bridge between the UI and the agent swarm.
-- **🧠 Agent Swarm**: Powered by **Microsoft AutoGen (v0.4.x)** utilizing a `SelectorGroupChat`. It relies on **Gemini 1.5 Pro's** massive 2-million token context window to handle massive cognitive loads and dynamic Fugu-style task delegation.
-- **💾 State Persistence**: **MongoDB Atlas** (via Motor) handles durable session memory and workflow resumption horizontally.
-- **⚡ Async Pulse (Redis)**: **Upstash Redis** handles the fast, ephemeral background task queuing, ensuring UI requests never block the main thread.
-- **🛡️ Critical Alert System (RabbitMQ)**: **CloudAMQP RabbitMQ** handles highly durable, persistent queues specifically for Human-in-the-Loop (HITL) alerts and high-stakes operations that require guaranteed delivery.
+- **🖥️ Mission Control (Frontend)**: React dashboard featuring Glassmorphism, Framer Motion UI animations, live execution telemetry, and a tabbed **Active Workspace** to toggle between real-time agent execution flow and an interactive **3D Graph Memory Viewer**.
+- **🚀 Neural Gateway (Backend)**: FastAPI serving as a fully asynchronous API gateway.
+- **🧠 Agent Swarm**: Powered by **Microsoft AutoGen (v0.4.x)** chat group. Specialized agents query and edit long-term memory dynamically via Cognee toolsets.
+- **💾 Short-Term State (MongoDB Atlas)**: Handles short-term operational logs, sessions state, and workflow execution snapshots.
+- **⚡ Zero-Latency Cache (Upstash Redis)**: Handles fast queueing and acts as the **Distributed Caching Layer for Cognee** (session cache + memory pre-fetch).
+- **🛡️ Asynchronous Graph Healing (RabbitMQ)**: CloudAMQP RabbitMQ handles durable queues for Human-in-the-Loop (HITL) alerts and queues `memory_correction_events` to update graph weights asynchronously.
 
 ---
 
@@ -42,79 +48,125 @@
 sequenceDiagram
     participant U as User (React UI)
     participant B as Backend (FastAPI)
-    participant Q_Fast as Redis Queue
-    participant W as AutoGen Swarm (Fugu Router)
-    participant D as MongoDB Atlas
-    participant Q_Crit as RabbitMQ (Alerts)
+    participant R as Upstash Redis (Cache)
+    participant Q as RabbitMQ (Broker)
+    participant W as AutoGen Swarm (Fugu)
+    participant C as Cognee Service
+    participant M as MongoDB Atlas
+    participant Wk as Memory Worker
 
-    U->>B: POST /api/workflow/start (Prompt)
-    B->>D: Initialize Session State
-    B->>Q_Fast: Dispatch 'START' Message
-    B-->>U: Return Session ID
-    Q_Fast->>W: Consume Task
-    W->>W: [Loop] Manager dynamically routes -> Planner/Researcher/Executor
-    W->>D: Save Intermediate Agent Logs
-    W->>W: Reviewer: Detect PENDING_APPROVAL
-    W->>D: Set status: PAUSED_FOR_HITL
-    W->>Q_Crit: Publish Durable Alert (RabbitMQ)
-    D-->>U: SSE Update: "Waiting for you..."
-    U->>B: POST /api/workflow/approve (Feedback)
-    B->>Q_Fast: Dispatch 'RESUME' Message
-    Q_Fast->>W: Finalize Execution & Summary
-    W->>D: Set status: COMPLETED
+    U->{B}: POST /api/workflow/start (Prompt)
+    B->{C}: Pre-Fetch: Query user habits context
+    C-->>B: Return Context Data
+    B->{R}: Cache Context in Redis (5m TTL)
+    B->{M}: Initialize Session State
+    B->{R}: Dispatch 'START' Job
+    R->{W}: Consume Job
+    W->{R}: Pull Baseline Context instantly (Under 1ms)
+    W->{W}: [Loop] Planner (Recall) -> Researcher (Remember) -> Executor (Forget)
+    W->{C}: Researcher: Dump reasoning steps (State-Backed Failover)
+    W->{W}: Reviewer: Detect PENDING_APPROVAL
+    W->{M}: Set status: PAUSED_FOR_HITL
+    W->{Q}: Publish durable HITL event
+    M-->>U: SSE Update: "Awaiting approval..."
+    U->{B}: POST /api/workflow/approve (Feedback / Rejection)
+    B->{Q}: Publish 'memory_correction_event'
+    Q->{Wk}: Consume correction event
+    Wk->{C}: cognee.improve(feedback) [Asynchronous graph self-healing]
+    B->{R}: Dispatch 'RESUME' Job
+    R->{W}: Resume swarm execution
+    W->{M}: Set status: COMPLETED
 ```
 
 ---
 
-## 👥 The Agent Team
+## 👥 The Cognitive Swarm + Memory Tooling
 
-| Agent | Role | Model | Specialization |
+| Agent | Role | Model | Cognee Memory Integration |
 | :--- | :--- | :--- | :--- |
-| **Manager (Router)** | The Brain | `Gemini-1.5-Pro` | Dynamically selects the next speaker based on context history. |
-| **Planner** | The Architect | `Gemini-1.5-Pro` | Decomposes prompts into precise workflows. |
-| **Researcher** | The Investigator | `Gemini-1.5-Pro` | Handles Web Search (Serper MCP) and deep analysis. |
-| **Executor** | The Operator | `Gemini-1.5-Pro` | Triggers MCP tools (Spotify, Brevo Email, API calls). |
-| **Reviewer** | The Auditor | `Gemini-1.5-Pro` | Quality control and triggers Human-In-The-Loop (HITL) pauses. |
+| **Planner** | The Architect | `Gemini-1.5-Pro` | Uses `cognee_recall_tool` to query past sessions for preferred frameworks and formatting habits. |
+| **Researcher** | The Investigator | `Gemini-1.5-Pro` | Uses `cognee_remember_tool` to dynamically ingest document files, URLs, and facts directly into the graph. |
+| **Executor** | The Operator | `Gemini-1.5-Pro` | Uses `cognee_forget_tool` to prune outdated tool states or deleted dataset nodes. |
+| **Reviewer** | The Auditor | `Gemini-1.5-Pro` | Triggers `/approve` routing. Captures human feedback to re-weight memory weights via `cognee.improve()`. |
+
+---
+
+## 🏆 Hackathon Winning Features
+
+### 1. Interactive 3D Memory Graph Visualizer
+Render a live, interactive 3D map of the agent's brain directly in the React interface.
+* **API**: `GET /api/workflow/{session_id}/visualize`
+* **UI**: Toggled in the **Active Workspace** dashboard tab. The React app renders Cognee’s network visualization HTML dynamically inside an iframe.
+
+### 2. Observability & Memory Tracing
+Proof of clean, explainable AI reasoning. Expose the exact graph traversal pathways the swarm took to reach an answer.
+* **API**: `GET /api/workflow/{session_id}/traces`
+* **Feature**: Leverages Cognee's internal OpenTelemetry tracer to return tree structures and operation summaries of retrieved graph nodes.
+
+### 3. Swarm "Dream/Sleep Cycles" (Session Distillation)
+Avoid bloated graphs. Keep the context window lean and cost-effective.
+* **API**: `POST /api/workflow/{session_id}/dream-distill`
+* **Feature**: Consolidates raw conversational session logs and task metrics, distills them into generalized long-term rules, updates the permanent graph, and purges redundant raw files.
+
+### 4. Cross-Platform Memory Importer
+Highly compatible with the wider ecosystem. Load memory graphs from other platforms in one click.
+* **API**: `POST /api/workflow/{session_id}/migrate-import`
+* **Feature**: Built-in compatibility with **Mem0**, **Letta**, and **Zep** export JSON files, restructuring them into Cognee's graph format.
+
+### 5. Chronological Episodic Timeline Ingestion
+Most memory engines lose track of *when* things happened.
+* **API**: `POST /api/workflow/{session_id}/temporal-ingest`
+* **Feature**: Integrates `graphiti_core` tasks to construct sequential, time-aware episode links, giving the swarm chronological context.
 
 ---
 
 ## 🚀 Quick Start (Local & Cloud)
 
-### 1. Environment Setup
-Create a `.env` file in the `backend/` directory:
-```bash
-# Core AI
+### 1. Environment Configuration
+Update `.env` in the `backend/` directory:
+```env
+# Gemini Core Keys
 GEMINI_API_KEY_PLANNER="..."
 GEMINI_API_KEY_RESEARCHER="..."
 GEMINI_API_KEY_EXECUTOR="..."
 GEMINI_API_KEY_REVIEWER="..."
 
-# Database & Queues
+# Databases & Infrastructure
 MONGO_URI="mongodb+srv://..."
-MONGO_DB_DATABASE="NexusAldb"
-MONGO_DB_CONTAINER="workflow_states"
-
 REDIS_URL="rediss://default:..."
 RABBITMQ_URL="amqps://..."
 
-# Security
-JWT_SECRET_KEY="your-random-secure-string"
+# Cognee LLM & Caching Config
+LLM_PROVIDER="gemini"
+LLM_API_KEY="your-gemini-key"
+LLM_MODEL="gemini/gemini-1.5-pro"
+EMBEDDING_PROVIDER="gemini"
+EMBEDDING_MODEL="gemini/text-embedding-004"
 
-# External MCP Tools
-SERPER_API_KEY="..."
-SPOTIFY_CLIENT_ID="..."
-SPOTIFY_CLIENT_SECRET="..."
+# Cognee Caching (Connected to Upstash Redis)
+CACHING="true"
+CACHE_BACKEND="redis"
+CACHE_HOST="your-upstash-redis-host.upstash.io"
+CACHE_PORT=6379
+CACHE_USERNAME="default"
+CACHE_PASSWORD="your-upstash-password"
 ```
 
-### 2. Launch the Backend
+### 2. Launch the Gateway & Workers
 ```bash
+# Terminal 1: Launch FastAPI Gateway
 cd backend
 pip install -r requirements.txt
 python -m uvicorn main:app --reload --port 8000
-```
-*(Note: Since you are using cloud providers for MongoDB, Redis, and RabbitMQ, you do not need to run Docker locally!)*
 
-### 3. Launch the Frontend
+# Terminal 2: Launch Swarm Worker
+python src/services/worker.service.py
+
+# Terminal 3: Launch Async Memory Worker (RabbitMQ Graph Healing)
+python memory_worker.py
+```
+
+### 3. Launch Frontend
 ```bash
 cd frontend
 npm install
@@ -124,6 +176,6 @@ npm run dev
 ---
 
 ## 🔒 Security & Privacy
-- **JWT Authentication**: All endpoints are protected with industry-standard tokens.
-- **Enterprise Message Brokers**: High-stakes API tool executions and human-in-the-loop triggers are pushed through RabbitMQ to guarantee they are never lost to server failure.
-- **Safety First**: No destructive actions (emails, API modifications) are sent without your explicit click in the dashboard, powered by the HITL Reviewer agent.
+- **JWT Protection**: All gateways endpoints are secured via JWT tokens.
+- **Enterprise Brokers**: Tool execution and HITL pauses are handled by RabbitMQ to ensure no tasks are lost to single points of failure.
+- **Safety First**: Destructive tool actions (emails, system deletes) are held in state until human approval is signed in the React panel.
