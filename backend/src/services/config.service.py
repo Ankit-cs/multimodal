@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     GEMINI_API_KEY_RESEARCHER: str
     GEMINI_API_KEY_EXECUTOR: str
     GEMINI_API_KEY_REVIEWER: str
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.1-flash-lite"
     GEMINI_BASE_URL: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
 
     
