@@ -2,7 +2,7 @@
   <img src="assets/logo.png" width="300" alt="NexusAI Logo">
 </p>
 
-<h1 align="center">NexusAI</h1>
+<h1 align="center">NexusAI + Cognee Memory</h1>
 
 <p align="center">
   <strong>Advanced Stateful Multi-Agent Swarm Orchestration with Hybrid Graph-Vector Memory</strong>
