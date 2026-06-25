@@ -180,33 +180,33 @@ graph TD
 ## 🚀 Quick Start (Local & Cloud)
 
 ### 1. Environment Configuration
-Update `.env` in the `backend/` directory:
+Create a `.env` file in the `backend/` directory (you can copy [backend/.env.example](file:///c:/Multimodal/NexusAl/backend/.env.example) as a baseline: `cp backend/.env.example backend/.env`) and update the variables:
 ```env
 # Gemini Core Keys
-GEMINI_API_KEY_PLANNER="..."
-GEMINI_API_KEY_RESEARCHER="..."
-GEMINI_API_KEY_EXECUTOR="..."
-GEMINI_API_KEY_REVIEWER="..."
+GEMINI_API_KEY_PLANNER="your-gemini-key"
+GEMINI_API_KEY_RESEARCHER="your-gemini-key"
+GEMINI_API_KEY_EXECUTOR="your-gemini-key"
+GEMINI_API_KEY_REVIEWER="your-gemini-key"
 
 # Databases & Infrastructure
-MONGO_URI="mongodb+srv://..."
-REDIS_URL="rediss://default:..."
-RABBITMQ_URL="amqps://..."
+MONGO_URI="mongodb://localhost:27017/"
+REDIS_URL="redis://localhost:6379/0"
+RABBITMQ_URL="amqp://guest:guest@localhost:5672/"
 
 # Cognee LLM & Caching Config
 LLM_PROVIDER="gemini"
 LLM_API_KEY="your-gemini-key"
-LLM_MODEL="gemini/gemini-1.5-pro"
+LLM_MODEL="gemini/gemini-2.5-flash"
 EMBEDDING_PROVIDER="gemini"
-EMBEDDING_MODEL="gemini/text-embedding-004"
+EMBEDDING_MODEL="gemini/gemini-embedding-2"
 
-# Cognee Caching (Connected to Upstash Redis)
+# Cognee Caching (Connected to Redis)
 CACHING="true"
 CACHE_BACKEND="redis"
-CACHE_HOST="your-upstash-redis-host.upstash.io"
+CACHE_HOST="localhost"
 CACHE_PORT=6379
 CACHE_USERNAME="default"
-CACHE_PASSWORD="your-upstash-password"
+CACHE_PASSWORD="your-redis-password"
 ```
 
 ### 2. Launch the Gateway & Workers
