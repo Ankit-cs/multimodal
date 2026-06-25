@@ -4,24 +4,25 @@ from typing import Optional
 
 from fastapi import HTTPException, Request, status
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 
 from src.services.config import settings
-
-# We use bcrypt as the hashing algorithm — passlib makes swapping schemes easy later
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 # ── Password helpers ─────────────────────────────────────────────────────────
 
 def hash_password(plain_password: str) -> str:
     """Turn a plain-text password into a bcrypt hash safe to store in the DB."""
-    return _pwd_context.hash(plain_password)
+    pwd_bytes = plain_password.encode("utf-8")
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Check if what the user typed matches the stored hash."""
-    return _pwd_context.verify(plain_password, hashed_password)
+    pwd_bytes = plain_password.encode("utf-8")
+    hashed_bytes = hashed_password.encode("utf-8")
+    return bcrypt.checkpw(pwd_bytes, hashed_bytes)
 
 
 # ── JWT helpers ──────────────────────────────────────────────────────────────
