@@ -1,6 +1,11 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Request, Depends
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Request, Depends, UploadFile, File
+from fastapi.responses import StreamingResponse, HTMLResponse, FileResponse
 import redis.asyncio as redis
+import cognee
+from pydantic import BaseModel
+import tempfile
+import shutil
+from pathlib import Path
 import uuid
 import json
 import asyncio
@@ -181,6 +186,21 @@ async def approve_workflow(request: ApprovalRequest, background_tasks: Backgroun
         state["status"] = "ACTIVE"
         feedback = f"User Feedback: {request.feedback}"
 
+        try:
+            from src.services.rabbitmq import rabbitmq_service
+            await rabbitmq_service.publish_critical_message(
+                queue_name="memory_correction_events",
+                payload={
+                    "event": "HUMAN_CORRECTION",
+                    "session_id": request.session_id,
+                    "user_id": state.get("owner_email", "default"),
+                    "feedback": request.feedback,
+                    "timestamp": datetime.datetime.utcnow().isoformat()
+                }
+            )
+        except Exception as e:
+            print(f"[RabbitMQ] Failed to dispatch memory correction event: {e}")
+
     await db_service.save_state(state)
 
     background_tasks.add_task(run_workflow, request.session_id, state.get("original_prompt", ""), feedback)
@@ -224,6 +244,177 @@ async def get_workflow_detail(session_id: str):
     if not state:
         raise HTTPException(status_code=404, detail="Session not found")
     return state
+
+
+@router.get("/{session_id}/visualize", response_class=HTMLResponse)
+async def get_workflow_graph_visualization(session_id: str):
+    db_state = await db_service.get_state(session_id)
+    if not db_state:
+        raise HTTPException(status_code=404, detail="Session not found")
+    user_id = db_state.get("owner_email", "default")
+    
+    try:
+        # Generates self-contained graph HTML content using Cognee's visualizer
+        html_content = await cognee.visualize_graph(dataset=f"user_{user_id}")
+        return HTMLResponse(content=html_content, status_code=200)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate visualization: {str(e)}")
+
+
+@router.get("/{session_id}/traces")
+async def get_workflow_traces(session_id: str):
+    from cognee.modules.observability.trace_context import get_all_traces
+    try:
+        traces = get_all_traces()
+        trace_list = []
+        for trace in traces:
+            trace_list.append({
+                "summary": trace.summary(),
+                "tree": trace.tree()
+            })
+        return {"traces": trace_list}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get traces: {str(e)}")
+
+
+class EpisodeIngestRequest(BaseModel):
+    episodes: list[str]
+
+
+@router.get("/{session_id}/export")
+async def export_workflow_memory(session_id: str, format: str = "json"):
+    if format not in ["cogx", "json", "graphml", "cypher"]:
+        raise HTTPException(status_code=400, detail="Invalid format. Choose from 'cogx', 'json', 'graphml', 'cypher'.")
+    
+    db_state = await db_service.get_state(session_id)
+    if not db_state:
+        raise HTTPException(status_code=404, detail="Session not found")
+    user_id = db_state.get("owner_email", "default")
+    
+    temp_dir = tempfile.mkdtemp()
+    
+    try:
+        if format == "cogx":
+            dest_path = Path(temp_dir) / "cogx_backup"
+            await cognee.export(dataset=f"user_{user_id}", format="cogx", destination=str(dest_path))
+            zip_file = shutil.make_archive(str(dest_path), "zip", str(dest_path))
+            return FileResponse(zip_file, media_type="application/zip", filename=f"nexusai_memory_{session_id}.zip")
+        else:
+            ext = "xml" if format == "graphml" else format
+            dest_file = Path(temp_dir) / f"export.{ext}"
+            await cognee.export(dataset=f"user_{user_id}", format=format, destination=str(dest_file))
+            return FileResponse(str(dest_file), media_type="application/octet-stream", filename=f"nexusai_memory_{session_id}.{ext}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
+
+
+@router.post("/{session_id}/migrate-import")
+async def import_workflow_memory(session_id: str, source_type: str, file: UploadFile = File(...)):
+    if source_type not in ["mem0", "letta", "zep"]:
+        raise HTTPException(status_code=400, detail="Invalid source type. Choose from 'mem0', 'letta', 'zep'.")
+    
+    db_state = await db_service.get_state(session_id)
+    if not db_state:
+        raise HTTPException(status_code=404, detail="Session not found")
+    user_id = db_state.get("owner_email", "default")
+    
+    temp_dir = tempfile.mkdtemp()
+    temp_file_path = Path(temp_dir) / file.filename
+    with open(temp_file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    try:
+        from cognee.migration import Mem0Source, LettaSource, ZepSource
+        if source_type == "mem0":
+            source = Mem0Source(str(temp_file_path))
+        elif source_type == "letta":
+            source = LettaSource(str(temp_file_path))
+        else:
+            source = ZepSource(str(temp_file_path))
+            
+        await cognee.remember(source, dataset_name=f"user_{user_id}")
+        return {"status": "success", "message": f"Successfully migrated and imported memory from {source_type}."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Migration failed: {str(e)}")
+
+
+@router.post("/{session_id}/temporal-ingest")
+async def ingest_temporal_episodes(session_id: str, request: EpisodeIngestRequest):
+    db_state = await db_service.get_state(session_id)
+    if not db_state:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    temp_dir = tempfile.mkdtemp()
+    mock_data_list = []
+    
+    try:
+        for idx, text in enumerate(request.episodes):
+            file_path = Path(temp_dir) / f"episode_{idx}.txt"
+            file_path.write_text(text)
+            
+            class TextData:
+                def __init__(self, loc):
+                    self.raw_data_location = loc
+            
+            mock_data_list.append(TextData(str(file_path)))
+            
+        from cognee.tasks.temporal_awareness import build_graph_with_temporal_awareness
+        await build_graph_with_temporal_awareness(mock_data_list)
+        
+        return {"status": "success", "message": "Chronological episodes successfully ingested with temporal awareness."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Temporal ingestion failed: {str(e)}")
+
+
+class AgentRunRequest(BaseModel):
+    prompt: str
+    user_email: str
+    session_id: str
+
+
+@router.post("/{session_id}/dream-distill")
+async def dream_distill_session(session_id: str):
+    db_state = await db_service.get_state(session_id)
+    if not db_state:
+        raise HTTPException(status_code=404, detail="Session not found")
+    user_id = db_state.get("owner_email", "default")
+    
+    try:
+        from cognee.modules.session_distillation.distill import distill_session
+        result = await distill_session(session_id=session_id, dataset=f"user_{user_id}")
+        return {
+            "status": "success",
+            "message": "Memory dream-distillation complete.",
+            "result": str(result)
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Distillation failed: {str(e)}")
+
+
+@router.post("/agent-run-decorated")
+async def run_decorated_agent(request: AgentRunRequest):
+    try:
+        from cognee import agent_memory
+        from cognee.modules.agent_memory.runtime import get_current_agent_memory_context
+
+        # Use the cognee agent_memory decorator dynamically to extract user context
+        @agent_memory(
+            with_memory=True,
+            save_session_traces=True,
+            dataset_name=f"user_{request.user_email}",
+            session_id=request.session_id
+        )
+        async def execute_task(prompt: str):
+            context = get_current_agent_memory_context()
+            return {
+                "status": "success",
+                "retrieved_context": context.memory_context if context else "None",
+                "input_prompt": prompt
+            }
+            
+        return await execute_task(request.prompt)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Decorated run failed: {str(e)}")
 
 
 @router.delete("/{session_id}")

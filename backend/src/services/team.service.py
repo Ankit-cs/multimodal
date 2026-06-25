@@ -8,7 +8,7 @@ from src.services.config import settings
 from src.utils.tools import duckduckgo_tool, calendar_tool, current_time_tool, email_tool, GlobalEventParams
 import datetime
 
-def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, hitl_enabled: bool = True, owner_email: str = None):
+def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, hitl_enabled: bool = True, owner_email: str = None, cognee_context: str = None):
     # model_info is required for non-OpenAI model names
     from autogen_core.models import ModelInfo
 
@@ -44,6 +44,23 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
     import uuid
     from src.db.database import db_service
     from autogen_core.tools import FunctionTool
+    from src.services.cognee import cognee_service
+
+    async def custom_cognee_recall(query: str) -> str:
+        """Queries past sessions to check for user habits or context."""
+        return await cognee_service.recall(query, user_id=owner_email or "default")
+
+    async def custom_cognee_remember(text: str) -> str:
+        """Ingests files or facts into permanent knowledge graph."""
+        return await cognee_service.remember(text, user_id=owner_email or "default")
+    
+    async def custom_cognee_forget(topic: str) -> str:
+        """Deletes specific datasets or topics from the graph."""
+        return await cognee_service.forget(topic, user_id=owner_email or "default")
+
+    cognee_recall_tool = FunctionTool(custom_cognee_recall, description="Queries past sessions to check for user habits or context.")
+    cognee_remember_tool = FunctionTool(custom_cognee_remember, description="Ingests files or facts into permanent knowledge graph.")
+    cognee_forget_tool = FunctionTool(custom_cognee_forget, description="Deletes specific datasets or topics from the graph.")
     
     async def custom_add_global_event(params: GlobalEventParams) -> str:
         """Saves an event/reminder to the Calendar. Visible to this user."""
@@ -71,16 +88,17 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
     planner = AssistantAgent(
         name="Planner",
         model_client=planner_client,
-        tools=[current_time_tool], # Friend's addition
+        tools=[current_time_tool, cognee_recall_tool], # Friend's addition + Cognee
+
         description="Plans the workflow. Route to this agent first, or when the user provides new Feedback.",
-        # Injected current date into system message
-        system_message=f"You are the Architect. Today is {current_date}. Decompose the user's objective into a step-by-step plan. Assign steps to Researcher or Executor. Do NOT execute tools yourself."
+        # Injected current date and cognee context into system message
+        system_message=f"You are the Architect. Today is {current_date}. Decompose the user's objective into a step-by-step plan. Assign steps to Researcher or Executor. Do NOT execute tools yourself.\n\nUser Context from Memory: {cognee_context or 'None'}"
     )
 
     researcher = AssistantAgent(
         name="Researcher",
         model_client=researcher_client,
-        tools=[duckduckgo_tool, current_time_tool] + extra_tools, # Friend's addition
+        tools=[duckduckgo_tool, current_time_tool, cognee_remember_tool] + extra_tools, # Friend's addition + Cognee
         description="Gathers facts. Route here when the Planner asks for research.",
         system_message="""You are the Context Gatherer. Use search tools to find facts. Return clear data for the Executor to use.
         If you have Finance tools (like stock_news or stock_info), use them for stock-specific news or financial data.
@@ -90,8 +108,8 @@ def build_orchestrai_team(is_approved: bool = False, extra_tools: list = None, h
     executor = AssistantAgent(
         name="Executor",
         model_client=executor_client,
-        # Merged new global calendar, time, and email tools
-        tools=[calendar_tool, global_calendar_tool, current_time_tool, email_tool] + extra_tools,
+        # Merged new global calendar, time, email tools, and cognee forget
+        tools=[calendar_tool, global_calendar_tool, current_time_tool, email_tool, cognee_forget_tool] + extra_tools,
         description="Executes APIs. Route here when the Planner asks for an action to be performed.",
         system_message=f"""You are the Executor. Today is {current_date}.
         You execute APIs based on the Planner's instructions and Researcher's data.
