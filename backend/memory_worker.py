@@ -20,6 +20,11 @@ async def process_memory_correction(message: aio_pika.IncomingMessage):
             print(f"[MemoryWorker Error] Failed to process message: {e}")
 
 async def main():
+    from cognee.modules.engine.operations.setup import setup as cognee_setup
+    try:
+        await cognee_setup()
+    except Exception as e:
+        print(f"[Cognee] MemoryWorker setup failed: {e}")
     print("Memory Worker Started. Listening for RabbitMQ memory correction events...")
     
     try:
