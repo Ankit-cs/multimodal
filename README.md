@@ -91,10 +91,10 @@ sequenceDiagram
 
 ---
 
-## 🏆 Hackathon Winning Features
+## 🌌 Enterprise-Grade Capabilities
 
 ### 1. Interactive 3D Memory Graph Visualizer
-Render a live, interactive 3D map of the agent's brain directly in the React interface.
+Render a live, interactive 3D map of the agent's cognitive graph directly in the React interface.
 * **API**: `GET /api/workflow/{session_id}/visualize`
 * **UI**: Toggled in the **Active Workspace** dashboard tab. The React app renders Cognee’s network visualization HTML dynamically inside an iframe.
 
@@ -109,7 +109,7 @@ Avoid bloated graphs. Keep the context window lean and cost-effective.
 * **Feature**: Consolidates raw conversational session logs and task metrics, distills them into generalized long-term rules, updates the permanent graph, and purges redundant raw files.
 
 ### 4. Cross-Platform Memory Importer
-Highly compatible with the wider ecosystem. Load memory graphs from other platforms in one click.
+Highly compatible with the wider ecosystem. Load memory graphs from other platforms seamlessly.
 * **API**: `POST /api/workflow/{session_id}/migrate-import`
 * **Feature**: Built-in compatibility with **Mem0**, **Letta**, and **Zep** export JSON files, restructuring them into Cognee's graph format.
 
@@ -117,6 +117,63 @@ Highly compatible with the wider ecosystem. Load memory graphs from other platfo
 Most memory engines lose track of *when* things happened.
 * **API**: `POST /api/workflow/{session_id}/temporal-ingest`
 * **Feature**: Integrates `graphiti_core` tasks to construct sequential, time-aware episode links, giving the swarm chronological context.
+
+---
+
+## 🏗️ Deep-Dive: Cognitive Architecture
+
+The following component diagram illustrates the complex interplay between the multi-agent swarm, the dynamic memory ingestion pipeline, and the persistence layers.
+
+```mermaid
+graph TD
+    subgraph Frontend [React Frontend]
+        UI[Dashboard & Chat]
+        GraphVis[3D Graph Visualizer]
+    end
+
+    subgraph API_Gateway [FastAPI Gateway]
+        Routes[Workflow Routes]
+        Auth[JWT Auth Middleware]
+    end
+
+    subgraph Cognitive_Engine [Cognee Service]
+        Ingest[Data Ingestion Pipeline]
+        Query[Graph Retrieval Engine]
+        Distill[Distillation/Sleep Cycle]
+    end
+
+    subgraph Memory_Workers [RabbitMQ & Workers]
+        RMQ[(RabbitMQ)]
+        SwarmWorker[AutoGen Swarm Worker]
+        MemWorker[Asynchronous Memory Healer]
+    end
+
+    subgraph Data_Layer [Persistence Layer]
+        Redis[(Upstash Redis Cache)]
+        MongoDB[(MongoDB Atlas)]
+        VectorDB[(Vector/Graph Storage)]
+    end
+
+    UI -->|REST / SSE| Routes
+    GraphVis -.->|IFrame| Routes
+    Routes --> Auth
+    Auth --> SwarmWorker
+    Routes --> Ingest
+    Routes --> Distill
+
+    SwarmWorker -->|Read/Write Context| Query
+    SwarmWorker -->|Enqueue Tasks| RMQ
+    RMQ --> MemWorker
+    MemWorker -->|Self-Heal| Ingest
+
+    Ingest --> VectorDB
+    Query --> VectorDB
+    Distill --> VectorDB
+
+    Query <--> Redis
+    Routes --> MongoDB
+    SwarmWorker --> MongoDB
+```
 
 ---
 
